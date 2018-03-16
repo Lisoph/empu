@@ -1,0 +1,56 @@
+; EMPU (Eazy memory processing unit) V1.0 Spec
+
+; No registers - all operations operate on memory directly.
+; EMPU has one dynamic addressing mode instead of a direct, register indirect and memory indirect.
+; The dynamic addressing mode can achieve indirect addressing up to 4 levels. Level 1 is "direct".
+; Examples:
+    mov word @0x100, 0x400 ; Move the value 0x123 into mem[0x100]
+    add word @0x100, 5 ; Add the value 5 to mem[0x100]
+    mov word @0x1400, @@0x100 ; Move the value at mem[mem[0x100]] into mem[0x1400]
+    mov word @0x1400, @0x405 ; Same as the 3 lines above
+
+    mov word 0x100, 0x200 ; syntax error - left hand side must be an address '@'
+
+
+; unit = (byte | word | dword)
+; Instructions and their encodings
+
+; U = Unit, I = Ins2 (0 - 4 for mov, add, ...),
+; L = lhs addressing level, R = rhs addressing level, D/F = destination address, S = source address,
+; A = 8bit value, AB = 16bit value, ABCD = 32bit value
+(mov | add | sub | mul | div) unit destination, source ; ....UU00 III0LLRR DDDDDDDD DDDDDDDD SSSSSSSS SSSSSSSS
+(mov | add | sub | mul | div) unit destination, value  ; ....UU01 III0LL00 FFFFFFFF FFFFFFFF AAAAAAAA (BBBBBBBB (CCCCCCCC DDDDDDDD))
+
+; U = unit, L = lhs addressing level, R = rhs addressing level, A = lhs address, B = rhs address,
+; V = 8bit value, VX = 16bit value, VXYZ = 32bit value
+cmp unit address1, address2 ; ....UULL 0RR00000 AAAAAAAA AAAAAAAA BBBBBBBB BBBBBBBB
+cmp unit address, value     ; ....UULL 10000000 AAAAAAAA AAAAAAAA VVVVVVVV(XXXXXXXX(YYYYYYYY ZZZZZZZZ))
+
+; M = Ins2 (0 - 3 for jg, je, ...), L = addressing level, A = address
+(jg | je | jl | jmp) address ; ....MMLL AAAAAAAA AAAAAAAA
+
+; I = interrupt id, A = address
+int id address ; ....IIII IIII0000 AAAAAAAA AAAAAAAA
+
+; M = Ins2 (0 - 5 for and, or, ...), U = unit, L = lhs addressing level, D = address,
+; A = 8bit value, AB = 16bit value, ABCD = 32bit value
+; R = source addressing mode, S = source address
+(and | or | xor | not | shl | shr) address value           ; ....0MMM UULL0001 DDDDDDDD DDDDDDDD AAAAAAAA (BBBBBBBB (CCCCCCCC DDDDDDDD))
+(and | or | xor | not | shl | shr) unit destination source ; ....0MMM UULLRR00 DDDDDDDD DDDDDDDD SSSSSSSS SSSSSSSS
+
+; Example program:
+
+add:
+    add .a, .b ; add whatever is in .b to .a
+    jmp .ret
+    .a: db 4 ; reserve 4 bytes of memory at this location
+    .b: db 4 ; ditto
+    .ret: db 4 ; ditto
+
+main:
+    ; calculate 4 + 7 with a function
+    mov add.a, 4
+    mov add.b, 7
+    mov add.ret, $+1 ; set add.ret to the next instruction after this
+    jmp add
+    mov 0x100, add.a ; store the result of the addition in mem[0x100]
