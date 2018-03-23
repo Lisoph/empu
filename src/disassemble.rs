@@ -1,19 +1,9 @@
 use super::*;
 
+#[derive(PartialEq)]
 pub enum DisassembleError {
     NotEnoughData,
     InvalidInstruction,
-}
-
-impl std::cmp::PartialEq for DisassembleError {
-    fn eq(&self, rhs: &Self) -> bool {
-        use self::DisassembleError::*;
-        match (self, rhs) {
-            (&NotEnoughData, &NotEnoughData) => true,
-            (&InvalidInstruction, &InvalidInstruction) => true,
-            _ => false,
-        }
-    }
 }
 
 impl From<()> for DisassembleError {
