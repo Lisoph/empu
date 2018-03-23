@@ -2,6 +2,8 @@ extern crate empu;
 extern crate term_painter;
 
 use std::collections::HashMap;
+use std::hash::Hash;
+use std::cmp::Eq;
 
 use empu::{Address, Instruction, Source, Unit, Usd};
 use empu::Instruction::*;
@@ -53,14 +55,15 @@ fn main() {
     ];
 
     let (binary, map) = empu::assemble(&program).unwrap();
-    print_binary(&binary, &map, &program);
+    print_binary(&binary, map, &program);
 }
 
-fn print_binary(binary: &[u8], map: &HashMap<usize, (usize, usize)>, program: &[Instruction]) {
-    for (i, &(start, end)) in map.iter() {
+fn print_binary(binary: &[u8], map: HashMap<usize, (usize, usize)>, program: &[Instruction]) {
+    let sorted = map_sorted_keyvals(map);
+    for &(i, (start, end)) in sorted.iter() {
         print!(
             "{} - {} bytes.\n  ",
-            Yellow.paint(&program[*i]),
+            Yellow.paint(&program[i]),
             Red.paint(end - start),
         );
         let chunk = &binary[start..end];
@@ -71,4 +74,10 @@ fn print_binary(binary: &[u8], map: &HashMap<usize, (usize, usize)>, program: &[
             println!();
         });
     }
+}
+
+fn map_sorted_keyvals<K: Eq + Hash + Ord, V>(map: HashMap<K, V>) -> Vec<(K, V)> {
+    let mut data: Vec<_> = map.into_iter().collect();
+    data.sort_unstable_by(|&(ref a, _), &(ref b, _)| a.cmp(b));
+    data
 }
