@@ -54,7 +54,7 @@ impl Instruction {
             0b0000 => mov_add_sub_mul_div(b1, rest),
             0b0001 => cmp(b1, rest),
             0b0010 => jg_je_jl_jmp(b1, rest),
-            0b0011 => Err(invins()), // TODO: int
+            0b0011 => int_iret(b1, rest),
             0b0100 => and_or_xor_not_shl_shr(b1, rest),
             _ => Err(invins()),
         }
@@ -166,6 +166,15 @@ fn jg_je_jl_jmp<I: Iterator<Item = u8>>(b1: u8, rest: &mut I) -> DisassembleResu
         1 => Ok(Instruction::Je(address)),
         2 => Ok(Instruction::Jl(address)),
         3 => Ok(Instruction::Jmp(address)),
+        _ => Err(invins()),
+    }
+}
+
+fn int_iret<I: Iterator<Item = u8>>(b1: u8, rest: &mut I) -> DisassembleResult {
+    let ins2 = b1 & 0b1;
+    match ins2 {
+        0 => Ok(Instruction::Int(rest.read_byte()?)),
+        1 => Ok(Instruction::Iret),
         _ => Err(invins()),
     }
 }
@@ -362,6 +371,16 @@ mod tests {
                 depth: 3,
             },)
         ];
+    }
+
+    #[test]
+    fn test_int_iret() {
+        eq_as_disas![
+            Instruction::Int(20),
+            Instruction::Int(0),
+            Instruction::Int(0xFF),
+            Instruction::Iret
+        ]
     }
 
     #[test]

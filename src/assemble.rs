@@ -36,6 +36,11 @@ impl Instruction {
             &Je(ref adr) => jump(out, 1, adr),
             &Jl(ref adr) => jump(out, 2, adr),
             &Jmp(ref adr) => jump(out, 3, adr),
+            &Int(ref id) => {
+                out.write_byte(0b00110000)?;
+                out.write_byte(*id)
+            }
+            &Iret => out.write_byte(0b00110001),
             &And(ref usd) => and_or_xor_not_shl_shr(out, 0, usd),
             &Or(ref usd) => and_or_xor_not_shl_shr(out, 1, usd),
             &Xor(ref usd) => and_or_xor_not_shl_shr(out, 2, usd),

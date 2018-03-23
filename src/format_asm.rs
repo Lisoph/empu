@@ -34,6 +34,8 @@ impl Instruction {
                 indirection(adr.depth as usize),
                 adr.location
             )?;
+        } else if let &Instruction::Int(ref id) = self {
+            write!(fmt, " 0x{:X}", id)?;
         }
 
         Ok(())

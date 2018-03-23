@@ -52,6 +52,8 @@ fn main() {
             location: 0x1000,
             depth: 1,
         }),
+        Int(33),
+        Iret,
     ];
 
     let (binary, map) = empu::assemble(&program).unwrap();

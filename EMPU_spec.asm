@@ -31,7 +31,9 @@ cmp unit address, value     ; 0001UULL 10000000 AAAAAAAA AAAAAAAA VVVVVVVV(XXXXX
 (jg | je | jl | jmp) address ; 0010MMLL AAAAAAAA AAAAAAAA
 
 ; I = interrupt id, A = address
-int id address ; 0011IIII IIII0000 AAAAAAAA AAAAAAAA
+
+int id ; 00110000 IIIIIIII
+iret   ; 00110001
 
 ; M = Ins2 (0 - 5 for and, or, ...), U = unit, L = lhs addressing level, D = address,
 ; A = 8bit value, AB = 16bit value, ABCD = 32bit value
@@ -42,16 +44,36 @@ int id address ; 0011IIII IIII0000 AAAAAAAA AAAAAAAA
 ; Example program:
 
 add:
-    add .a, .b ; add whatever is in .b to .a
-    jmp .ret
-    .a: db 4 ; reserve 4 bytes of memory at this location
-    .b: db 4 ; ditto
-    .ret: db 4 ; ditto
+    add @.a, @.b ; add whatever is in .b to .a
+    jmp @.ret
+    .a: db 2 ; reserve 2 bytes of memory at this location
+    .b: db 2 ; ditto
+    .ret: db 2 ; ditto
 
 main:
+    ; register interrupt 0xEE handler
+    mov 0xEE, handle_ee
+
     ; calculate 4 + 7 with a function
     mov add.a, 4
     mov add.b, 7
-    mov add.ret, $+1 ; set add.ret to the next instruction after this
+    mov add.ret, $+2 ; set add.ret to the next instruction after this
     jmp add
     mov 0x100, add.a ; store the result of the addition in mem[0x100]
+    int 0x12
+
+handle_ee:
+    ; this gets called from the cpu in an interrupt
+    mov print_str.str, .hello
+    mov print_str.ret, $+2
+    jmp print_str
+    iret ; return from interrupt, continue execution where it left of.
+    .hello: ds "Hello world!\0"
+
+print_str:
+    ; 0x101: Where the hardware expects the string address to be stored.
+    mov 0x101, @.str
+    int 0x10 ; 0x10 = print string interrupt
+    jmp @.ret
+    .str db 2
+    .ret db 2
