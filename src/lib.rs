@@ -1,9 +1,12 @@
 use std::io::Result as IoResult;
 use std::collections::HashMap;
 
-pub mod assemble;
-pub mod disassemble;
-pub mod format_asm;
+mod assemble;
+mod disassemble;
+mod format_asm;
+pub mod assembler;
+
+pub use disassemble::*;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {

@@ -2,14 +2,6 @@ use super::*;
 
 use std::io::{Result as IoResult, Write};
 
-/**
-    And(Usd),
-    Or(Usd),
-    Xor(Usd),
-    Not(Usd),
-    Shl(Usd),
-    Shr(Usd),
- */
 impl Instruction {
     pub fn assemble(&self, mut out: &mut Write) -> IoResult<()> {
         use Instruction::*;
