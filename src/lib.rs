@@ -8,7 +8,7 @@ pub mod assembler;
 
 pub use disassemble::*;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub enum Instruction {
     Mov(Usd),
     Add(Usd),
@@ -80,14 +80,14 @@ impl std::fmt::Display for Instruction {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct Usd {
     pub unit: Unit,
     pub source: Source,
     pub destination: Address,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub enum Unit {
     Byte,
     Word,
@@ -121,13 +121,13 @@ impl Unit {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct Address {
     pub location: u16,
     pub depth: u8,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub enum Source {
     Value(u32),
     Pointer(Address),
