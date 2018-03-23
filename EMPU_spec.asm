@@ -14,29 +14,30 @@
 
 ; unit = (byte | word | dword)
 ; Instructions and their encodings
+; The first 4 highest bits of an instructions it always the opcode ID.
 
 ; U = Unit, I = Ins2 (0 - 4 for mov, add, ...),
 ; L = lhs addressing level, R = rhs addressing level, D/F = destination address, S = source address,
 ; A = 8bit value, AB = 16bit value, ABCD = 32bit value
-(mov | add | sub | mul | div) unit destination, source ; ....UU00 III0LLRR DDDDDDDD DDDDDDDD SSSSSSSS SSSSSSSS
-(mov | add | sub | mul | div) unit destination, value  ; ....UU01 III0LL00 FFFFFFFF FFFFFFFF AAAAAAAA (BBBBBBBB (CCCCCCCC DDDDDDDD))
+(mov | add | sub | mul | div) unit destination, source ; 0000UU00 III0LLRR DDDDDDDD DDDDDDDD SSSSSSSS SSSSSSSS
+(mov | add | sub | mul | div) unit destination, value  ; 0000UU01 III0LL00 FFFFFFFF FFFFFFFF AAAAAAAA (BBBBBBBB (CCCCCCCC DDDDDDDD))
 
 ; U = unit, L = lhs addressing level, R = rhs addressing level, A = lhs address, B = rhs address,
 ; V = 8bit value, VX = 16bit value, VXYZ = 32bit value
-cmp unit address1, address2 ; ....UULL 0RR00000 AAAAAAAA AAAAAAAA BBBBBBBB BBBBBBBB
-cmp unit address, value     ; ....UULL 10000000 AAAAAAAA AAAAAAAA VVVVVVVV(XXXXXXXX(YYYYYYYY ZZZZZZZZ))
+cmp unit address1, address2 ; 0001UULL 0RR00000 AAAAAAAA AAAAAAAA BBBBBBBB BBBBBBBB
+cmp unit address, value     ; 0001UULL 10000000 AAAAAAAA AAAAAAAA VVVVVVVV(XXXXXXXX(YYYYYYYY ZZZZZZZZ))
 
 ; M = Ins2 (0 - 3 for jg, je, ...), L = addressing level, A = address
-(jg | je | jl | jmp) address ; ....MMLL AAAAAAAA AAAAAAAA
+(jg | je | jl | jmp) address ; 0010MMLL AAAAAAAA AAAAAAAA
 
 ; I = interrupt id, A = address
-int id address ; ....IIII IIII0000 AAAAAAAA AAAAAAAA
+int id address ; 0011IIII IIII0000 AAAAAAAA AAAAAAAA
 
 ; M = Ins2 (0 - 5 for and, or, ...), U = unit, L = lhs addressing level, D = address,
 ; A = 8bit value, AB = 16bit value, ABCD = 32bit value
 ; R = source addressing mode, S = source address
-(and | or | xor | not | shl | shr) address value           ; ....0MMM UULL0001 DDDDDDDD DDDDDDDD AAAAAAAA (BBBBBBBB (CCCCCCCC DDDDDDDD))
-(and | or | xor | not | shl | shr) unit destination source ; ....0MMM UULLRR00 DDDDDDDD DDDDDDDD SSSSSSSS SSSSSSSS
+(and | or | xor | not | shl | shr) address value           ; 01000MMM UULL0001 DDDDDDDD DDDDDDDD AAAAAAAA (BBBBBBBB (CCCCCCCC DDDDDDDD))
+(and | or | xor | not | shl | shr) unit destination source ; 01000MMM UULLRR00 DDDDDDDD DDDDDDDD SSSSSSSS SSSSSSSS
 
 ; Example program:
 

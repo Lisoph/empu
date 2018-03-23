@@ -20,7 +20,8 @@ impl Instruction {
             &Mul(ref usd) => mov_add_sub_mul_div(out, 3, &usd),
             &Div(ref usd) => mov_add_sub_mul_div(out, 4, &usd),
             &Cmp(ref usd) => {
-                out.write_byte(usd.unit.id() << 2 | usd.destination.depth)?;
+                assert!(usd.destination.depth <= 3);
+                out.write_byte(0b00010000 | usd.unit.id() << 2 | usd.destination.depth)?;
                 out.write_byte(usd.source.id() << 7 | usd.source.depth().unwrap_or(0) << 5)?;
                 out.write_short(usd.destination.location)?;
                 match usd.source {
@@ -46,6 +47,7 @@ impl Instruction {
 }
 
 fn mov_add_sub_mul_div(mut out: &mut Write, id: u8, usd: &Usd) -> IoResult<()> {
+    assert!(usd.destination.depth <= 3);
     out.write_byte(usd.unit.id() << 2 | usd.source.id())?;
     out.write_byte(id << 5 | usd.destination.depth << 2 | usd.source.depth().unwrap_or(0))?;
     out.write_short(usd.destination.location)?;
@@ -59,12 +61,14 @@ fn mov_add_sub_mul_div(mut out: &mut Write, id: u8, usd: &Usd) -> IoResult<()> {
 }
 
 fn jump(mut out: &mut Write, id: u8, adr: &Address) -> IoResult<()> {
-    out.write_byte(id << 2 | adr.depth)?;
+    assert!(adr.depth <= 3);
+    out.write_byte(0b00100000 | id << 2 | adr.depth)?;
     out.write_short(adr.location)
 }
 
 fn and_or_xor_not_shl_shr(mut out: &mut Write, id: u8, usd: &Usd) -> IoResult<()> {
-    out.write_byte(id)?;
+    assert!(usd.destination.depth <= 3);
+    out.write_byte(0b01000000 | id)?;
     out.write_byte(
         usd.unit.id() << 6 | usd.destination.depth << 4 | usd.source.depth().unwrap_or(0) << 2
             | usd.source.id(),
@@ -90,6 +94,6 @@ impl<T: Write> WriteExt for T {
     }
 
     fn write_short(&mut self, short: u16) -> IoResult<()> {
-        self.write_all(&[(short >> 8) as u8, (short & 0xF) as u8])
+        self.write_all(&[(short >> 8) as u8, (short & 0xFF) as u8])
     }
 }

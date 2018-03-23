@@ -1,9 +1,11 @@
 use std::io::Result as IoResult;
 use std::collections::HashMap;
 
-pub mod assembler;
+pub mod assemble;
+pub mod disassemble;
 pub mod format_asm;
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {
     Mov(Usd),
     Add(Usd),
@@ -59,10 +61,7 @@ impl Instruction {
     pub fn address(&self) -> Option<&Address> {
         use Instruction::*;
         match self {
-            &Jg(ref adr) |
-            &Je(ref adr) |
-            &Jl(ref adr) |
-            &Jmp(ref adr) => Some(adr),
+            &Jg(ref adr) | &Je(ref adr) | &Jl(ref adr) | &Jmp(ref adr) => Some(adr),
             _ => None,
         }
     }
@@ -74,12 +73,14 @@ impl std::fmt::Display for Instruction {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Usd {
     pub unit: Unit,
     pub source: Source,
     pub destination: Address,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum Unit {
     Byte,
     Word,
@@ -102,13 +103,24 @@ impl Unit {
             Unit::Dword => 4,
         }
     }
+
+    fn from_id(id: u8) -> Option<Self> {
+        match id {
+            0 => Some(Unit::Byte),
+            1 => Some(Unit::Word),
+            2 => Some(Unit::Dword),
+            _ => None,
+        }
+    }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Address {
     pub location: u16,
     pub depth: u8,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum Source {
     Value(u32),
     Pointer(Address),
@@ -117,8 +129,8 @@ pub enum Source {
 impl Source {
     pub fn id(&self) -> u8 {
         match *self {
-            Source::Value(_) => 0,
-            Source::Pointer(_) => 1,
+            Source::Value(_) => 1,
+            Source::Pointer(_) => 0,
         }
     }
 

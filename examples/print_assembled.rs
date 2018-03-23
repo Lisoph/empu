@@ -13,20 +13,20 @@ use term_painter::Color::*;
 
 fn main() {
     let program = [
-        Mov(Usd {
-            unit: Unit::Byte,
-            source: Source::Value(0xDEAD),
-            destination: Address {
-                location: 0xBEFF,
-                depth: 0,
-            },
-        }),
-        Mov(Usd {
-            unit: Unit::Dword,
-            source: Source::Value(0xBEEFBEEF),
+        Instruction::Mov(Usd {
+            unit: Unit::Word,
+            source: Source::Value(123),
             destination: Address {
                 location: 0xBEEF,
-                depth: 1,
+                depth: 3,
+            },
+        }),
+        Instruction::And(Usd {
+            unit: Unit::Dword,
+            source: Source::Value(0xBEEF),
+            destination: Address {
+                location: 0x100,
+                depth: 0,
             },
         }),
         Add(Usd {
@@ -44,7 +44,7 @@ fn main() {
             unit: Unit::Word,
             destination: Address {
                 location: 0x1000,
-                depth: 0,
+                depth: 1,
             },
             source: Source::Value(0xFFFF),
         }),

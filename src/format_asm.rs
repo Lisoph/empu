@@ -16,11 +16,11 @@ impl Instruction {
                     Unit::Word => "word",
                     Unit::Dword => "dword",
                 },
-                indirection(usd.destination.depth as usize + 1),
+                indirection(usd.destination.depth as usize),
                 usd.destination.location,
                 match usd.source {
                     Source::Value(..) => "".to_owned(),
-                    Source::Pointer(ref adr) => indirection(adr.depth as usize + 1),
+                    Source::Pointer(ref adr) => indirection(adr.depth as usize),
                 },
                 match usd.source {
                     Source::Value(ref v) => *v,
@@ -28,7 +28,12 @@ impl Instruction {
                 }
             )?;
         } else if let Some(ref adr) = self.address() {
-            write!(fmt, " {}0x{:X}", indirection(adr.depth as usize + 1), adr.location)?;
+            write!(
+                fmt,
+                " {}0x{:X}",
+                indirection(adr.depth as usize),
+                adr.location
+            )?;
         }
 
         Ok(())
