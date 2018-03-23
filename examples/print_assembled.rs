@@ -59,7 +59,7 @@ fn main() {
 }
 
 fn print_binary(binary: &[u8], map: HashMap<usize, (usize, usize)>, program: &[Instruction]) {
-    let sorted = map_sorted_keyvals(map);
+    let sorted = map_sorted(map);
     for &(i, (start, end)) in sorted.iter() {
         print!(
             "{} - {} bytes.\n  ",
@@ -76,7 +76,7 @@ fn print_binary(binary: &[u8], map: HashMap<usize, (usize, usize)>, program: &[I
     }
 }
 
-fn map_sorted_keyvals<K: Eq + Hash + Ord, V>(map: HashMap<K, V>) -> Vec<(K, V)> {
+fn map_sorted<K: Eq + Hash + Ord, V>(map: HashMap<K, V>) -> Vec<(K, V)> {
     let mut data: Vec<_> = map.into_iter().collect();
     data.sort_unstable_by(|&(ref a, _), &(ref b, _)| a.cmp(b));
     data
