@@ -8,6 +8,7 @@ pub enum Token {
     Unit(Unit),
     At,
     Comma,
+    Dollar,
     AbsoluteLabel(String),
     RelativeLabel(String),
     IntLiteral(i64),
@@ -225,17 +226,18 @@ impl<I: Iterator<Item = char>> Lexer<I> {
     }
 
     fn next_token(&mut self) -> Result {
+        macro_rules! simple_token {
+            ($tok: expr) => {{
+                let cur_pos = self.cur_pos;
+                self.next_input();
+                Result::token(cur_pos, $tok)
+            }};
+        }
+
         match self.cur_char {
-            '@' => {
-                let cur_pos = self.cur_pos;
-                self.next_input();
-                Result::token(cur_pos, Token::At)
-            }
-            ',' => {
-                let cur_pos = self.cur_pos;
-                self.next_input();
-                Result::token(cur_pos, Token::Comma)
-            }
+            '@' => simple_token!(Token::At),
+            ',' => simple_token!(Token::Comma),
+            '$' => simple_token!(Token::Dollar),
             '"' => self.parse_string_literal(),
             '.' => self.parse_relative_label(),
             c if c.is_digit(10) || c == '-' || c == '+' => self.parse_int_literal(),
