@@ -77,3 +77,4 @@ this_is_an_absolute_label:
     ; $+1 means the *next* instruction / the one following the current one.
     ; It does **not** mean plus 1 byte!
     ; Positive (+) and negative (-) offsets are allowed.
+    ; Positive is implied by default so the + symbol can be omitted.

@@ -28,6 +28,10 @@ fn main() {
     iret
     0o377
     +0o001
+
+    mov dword 100, $+1
+    mov dword 100, $-1
+    mov dword 100, $1
     "#;
 
     for t in empu::assembler::parse(code.chars()) {

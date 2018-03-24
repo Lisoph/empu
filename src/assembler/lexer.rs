@@ -303,23 +303,27 @@ impl<I: Iterator<Item = char>> Lexer<I> {
     fn parse_int_literal(&mut self) -> Result {
         let mut start_character = self.cur_char;
         let start = self.cur_pos;
-        let prefix = if start_character == '+' || start_character == '-' {
-            let prefix = start_character;
-            if let Some(c) = self.try_next_input() {
-                start_character = c;
-            } else {
-                return Result::error(self.cur_pos, Error::UnexpectedEof);
+        let sign = match start_character {
+            '-' => {
+                self.next_input();
+                -1
             }
-            Some(prefix)
-        } else {
-            None
+            '+' => {
+                self.next_input();
+                1
+            }
+            _ => 1,
         };
+
+        start_character = self.cur_char;
+        if self.eof_hit {
+            return Result::error(self.cur_pos, Error::UnexpectedEof);
+        }
 
         if let Some(next) = self.try_next_input() {
             let cur_pos = self.cur_pos;
 
-            let mut parse_digits = |radix: u32, start_digit: u32| -> Result {
-                let mut val = start_digit as i64;
+            let mut parse_digits = |radix: u32, mut val: i64| -> Result {
                 while let Some(c) = self.try_next_input() {
                     if let Some(d) = c.to_digit(radix) {
                         val = val * radix as i64 + d as i64;
@@ -328,10 +332,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
                     }
                 }
 
-                if let Some(prefix) = prefix {
-                    val *= if prefix == '-' { -1 } else { 1 };
-                }
-                Result::token(start, Token::IntLiteral(val))
+                Result::token(start, Token::IntLiteral(val * sign))
             };
 
             match (start_character, next) {
@@ -341,14 +342,11 @@ impl<I: Iterator<Item = char>> Lexer<I> {
                 (c, 'x') | (c, 'o') | (c, 'b') => {
                     Result::error(cur_pos, Error::WrongCharacter(c, '0'))
                 }
-                ('0', c) => if let Some(d) = c.to_digit(10) {
-                    parse_digits(10, d)
-                } else {
-                    Result::error(cur_pos, Error::NotADigit)
-                },
                 (c1, c2) => if let Some(d1) = c1.to_digit(10) {
-                    if let Some(d2) = c2.to_digit(10) {
-                        parse_digits(10, d1 * 10 + d2)
+                    if c2.is_whitespace() {
+                        Result::token(start, Token::IntLiteral(d1 as i64 * sign))
+                    } else if let Some(d2) = c2.to_digit(10) {
+                        parse_digits(10, (d1 * 10 + d2) as i64)
                     } else {
                         Result::error(cur_pos, Error::NotADigit)
                     }
@@ -358,7 +356,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
             }
         } else {
             if let Some(start_digit) = start_character.to_digit(10) {
-                Result::token(start, Token::IntLiteral(start_digit as i64))
+                Result::token(start, Token::IntLiteral(start_digit as i64 * sign))
             } else {
                 Result::error(start, Error::NotADigit)
             }
