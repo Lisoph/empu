@@ -12,6 +12,7 @@ pub enum Token {
     RelativeLabel(String),
     IntLiteral(i64),
     StringLiteral(String),
+    LabelReference(String),
 }
 
 #[derive(Debug)]
@@ -127,7 +128,6 @@ pub enum Error {
     WrongCharacter(char, char),
     MissingCharacter(char),
     UnexpectedNewline,
-    WrongWord(String),
     NotADigit,
     UnexpectedEof,
     InvalidCharacter,
@@ -225,7 +225,6 @@ impl<I: Iterator<Item = char>> Lexer<I> {
     }
 
     fn next_token(&mut self) -> Result {
-        self.skip_whitespace();
         match self.cur_char {
             '@' => {
                 let cur_pos = self.cur_pos;
@@ -253,9 +252,10 @@ impl<I: Iterator<Item = char>> Lexer<I> {
                 } else if let Ok(unit) = Unit::from_str(&string) {
                     Result::token(start, Token::Unit(unit))
                 } else if self.cur_char == ':' {
+                    self.next_input();
                     Result::token(start, Token::AbsoluteLabel(string))
                 } else {
-                    Result::error(start, Error::WrongWord(string))
+                    Result::token(start, Token::LabelReference(string))
                 }
             }
             _ => Result::error(self.cur_pos, Error::InvalidCharacter),
@@ -287,7 +287,10 @@ impl<I: Iterator<Item = char>> Lexer<I> {
                 c.is_alphabetic() || c.is_digit(10) || c == '_'
             });
             match self.cur_char {
-                ':' => Result::token(start, Token::RelativeLabel(string)),
+                ':' => {
+                    self.next_input();
+                    Result::token(start, Token::RelativeLabel(string))
+                }
                 c => Result::error(self.cur_pos, Error::WrongCharacter(c, ':')),
             }
         } else {
@@ -378,6 +381,7 @@ impl<I: Iterator<Item = char>> Iterator for Lexer<I> {
         }
 
         // Main iteration driver
+        self.skip_whitespace();
         if !self.eof_hit {
             let res = self.next_token();
             if let Result::Error(_) = res {
