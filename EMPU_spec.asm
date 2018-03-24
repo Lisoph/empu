@@ -75,5 +75,5 @@ print_str:
     mov 0x101, @.str
     int 0x10 ; 0x10 = print string interrupt
     jmp @.ret
-    .str db 2
-    .ret db 2
+    .str: db 2
+    .ret: db 2
