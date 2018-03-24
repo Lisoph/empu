@@ -318,16 +318,12 @@ impl<I: Iterator<Item = char>> Lexer<I> {
 
             let mut parse_digits = |radix: u32, start_digit: u32| -> Result {
                 let mut val = start_digit as i64;
-                let mut base = 10i64;
-                self.next_input();
-                while !self.eof_hit {
-                    if let Some(d) = self.cur_char.to_digit(radix) {
-                        val = val * base + d as i64;
-                        base *= 10;
+                while let Some(c) = self.try_next_input() {
+                    if let Some(d) = c.to_digit(radix) {
+                        val = val * radix as i64 + d as i64;
                     } else {
                         break;
                     }
-                    self.next_input();
                 }
 
                 if let Some(prefix) = prefix {

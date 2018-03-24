@@ -12,6 +12,22 @@ fn main() {
         .sub_label:
             mov @1000, @400
             jmp abs_label
+
+    0x01
+    0x02
+    0xFF
+    0xff
+    0x0A
+    -0x0A
+    iret
+    0b0
+    0b1
+    0b11111111
+    0b11111110
+    -0b11111101
+    iret
+    0o377
+    +0o001
     "#;
 
     for t in empu::assembler::parse(code.chars()) {
