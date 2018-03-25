@@ -1,6 +1,4 @@
 ; This is a single-line comment
-/* This is a multi-
-line comment */
 
 this_is_an_absolute_label:
     iret ; A simple instruction without arguments

@@ -104,14 +104,15 @@ impl FromStr for Unit {
 #[derive(Debug, Copy, Clone)]
 pub struct Position {
     pub line: usize,
-    pub col: usize,
+    pub col: isize,
 }
 
 impl Position {
     fn update(&mut self, c: char) {
         if c == '\n' {
             self.line += 1;
-            self.col = 0;
+            // -1: Hack so that column numbers after newlines are correctly 0-based.
+            self.col = -1;
         } else {
             self.col += 1;
         }
@@ -131,7 +132,7 @@ pub enum Error {
     UnexpectedNewline,
     NotADigit,
     UnexpectedEof,
-    InvalidCharacter,
+    InvalidCharacter(char),
 }
 
 #[derive(Debug)]
@@ -225,6 +226,14 @@ impl<I: Iterator<Item = char>> Lexer<I> {
         self.next_input();
     }
 
+    fn skip_comment(&mut self) {
+        self.skip_whitespace();
+        while !self.eof_hit && self.cur_char == ';' {
+            self.skip_line();
+            self.skip_whitespace();
+        }
+    }
+
     fn next_token(&mut self) -> Result {
         macro_rules! simple_token {
             ($tok: expr) => {{
@@ -260,7 +269,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
                     Result::token(start, Token::LabelReference(string))
                 }
             }
-            _ => Result::error(self.cur_pos, Error::InvalidCharacter),
+            c => Result::error(self.cur_pos, Error::InvalidCharacter(c)),
         }
     }
 
@@ -377,6 +386,7 @@ impl<I: Iterator<Item = char>> Iterator for Lexer<I> {
         }
 
         // Main iteration driver
+        self.skip_comment();
         self.skip_whitespace();
         if !self.eof_hit {
             let res = self.next_token();

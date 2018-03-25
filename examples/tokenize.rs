@@ -1,37 +1,19 @@
 extern crate empu;
 
 fn main() {
-    let code = r#"
-    mov dword 100, -200
-    cmp byte @105, 33
+    let code = r#"mov dword 100, -0x200
+    cmp byte @105, 0b00101011
     ds "Hello world"
     asdf foo
     iret
     abs_label:
     int 0xFF
         .sub_label:
-            mov @1000, @400
+            mov @0o333, @400
             jmp abs_label
-
-    0x01
-    0x02
-    0xFF
-    0xff
-    0x0A
-    -0x0A
-    iret
-    0b0
-    0b1
-    0b11111111
-    0b11111110
-    -0b11111101
-    iret
-    0o377
-    +0o001
-
-    mov dword 100, $+1
-    mov dword 100, $-1
-    mov dword 100, $1
+    ; Comment 1
+    iret ; Comment 2
+    ; Comment 3 int 255
     "#;
 
     for t in empu::assembler::parse(code.chars()) {
