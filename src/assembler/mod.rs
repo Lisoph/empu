@@ -1,4 +1,6 @@
 pub mod lexer;
+pub mod parser;
+pub mod ast;
 
 pub fn parse<'a, I: IntoIterator<Item = char> + 'a>(
     code: I,

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use std::result::Result as StdResult;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Token {
     Instruction(Instruction),
     Directive(Directive),
@@ -16,7 +16,7 @@ pub enum Token {
     LabelReference(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Instruction {
     Mov,
     Add,
@@ -65,7 +65,7 @@ impl FromStr for Instruction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Directive {
     Db,
     Ds,
@@ -82,7 +82,7 @@ impl FromStr for Directive {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Unit {
     Byte,
     Word,
@@ -119,13 +119,13 @@ impl Position {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FatToken {
     pub token: Token,
     pub pos: Position,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Error {
     WrongCharacter(char, char),
     MissingCharacter(char),
@@ -135,13 +135,13 @@ pub enum Error {
     InvalidCharacter(char),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FatError {
     pub error: Error,
     pub pos: Position,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Result {
     Success(FatToken),
     Error(FatError),
